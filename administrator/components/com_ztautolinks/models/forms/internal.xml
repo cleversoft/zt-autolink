@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+    <fields name="params">
+        <fieldset name="com_content">            
+            <field name="com_content_article" type="modal_article" label="Select a Joomla article" description="" />
+        </fieldset>        
+    </fields>  
+</form>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>  
+    <fieldset name="COM_ZTAUTOLINKS_FIELDSET_ITEM">
+        <field name="id"  type="text" class="readonly" label="JGLOBAL_FIELD_ID_LABEL"
+               description ="JGLOBAL_FIELD_ID_DESC" size="10" default="0"
+               readonly="true"  />
+
+        <!-- Published -->
+        <field 
+            type="list" 
+            default="1"
+            name="published" 
+            id="published"             
+            label="COM_ZTAUTOLINKS_FIELDLABEL_PUBLISHED"
+            description="COM_ZTAUTOLINKS_FIELDDESC_PUBLISHED" >
+            <option value="1">JYES</option>
+            <option value="0">JNO</option>
+        </field>           
+        <!-- Keyword -->    
+        <field 
+            type="text" 
+            name="keyword" 
+            id="keyword" 
+            label="COM_ZTAUTOLINKS_FIELDLABEL_KEYWORD"
+            description="COM_ZTAUTOLINKS_FIELDDESC_KEYWORD"
+            size="80"
+            maxLength="255"
+            required="true"
+            message="COM_ZTAUTOLINKS_EMPTY_KEYWORD"
+        />   
+        <field 
+            type="url" 
+            default="http://zootemplate.com"
+            name="link" 
+            id="link" 
+            class="validate-url"
+            label="COM_ZTAUTOLINKS_FIELDLABEL_LINK"
+            description="COM_ZTAUTOLINKS_FIELDDESC_LINK"
+            size="100"
+            maxLength="255" 
+            required="true"
+            message="COM_ZTAUTOLINKS_EMPTY_URL"
+        />
+        <field name="com_content_article" type="modal_article" label="Select a Joomla article" description="" />
+        <field 
+            type="text" 
+            default="1"
+            name="limits" 
+            id="limits" 
+            class="validate-numeric"
+            label="COM_ZTAUTOLINKS_FIELDLABEL_LIMITS"
+            description="COM_ZTAUTOLINKS_FIELDDESC_LIMITS"
+            size="10"
+            maxLength="10" />     
+        <field 
+            type="list"
+            default="3"
+            name="occurrence" 
+            id="occurrence" 
+            label="COM_ZTAUTOLINKS_FIELDLABEL_OCCURRENCE"
+            description="COM_ZTAUTOLINKS_FIELDDESC_OCCURRENCE"
+        >
+            <option value="1">COM_ZTAUTOLINKS_VALUE_OCCURRENCE_TOP</option>
+            <option value="2">COM_ZTAUTOLINKS_VALUE_OCCURRENCE_END</option>
+            <option value="3">COM_ZTAUTOLINKS_VALUE_OCCURRENCE_RANDOM</option>
+        </field> 
+        <field 
+            type="text"
+            default="0"
+            name="priority" 
+            id="priority" 
+            class="validate-numeric"
+            label="COM_ZTAUTOLINKS_FIELDLABEL_PRIORITY"
+            description="COM_ZTAUTOLINKS_FIELDDESC_PRIORITY"
+            size="10"
+            maxLength="10" />            
+    </fieldset>        
+    <fieldset name="COM_ZTAUTOLINKS_FIELDSET_INFORMATION">
+        <field 
+            type="text"
+            default="0"
+            name="count" 
+            id="priority" 
+            class="readonly"
+            label="COM_ZTAUTOLINKS_FIELDLABEL_COUNT"
+            description="COM_ZTAUTOLINKS_FIELDDESC_COUNT"             
+            readonly="true"
+            disabled="true"
+        />           
+    </fieldset>    
+    <!-- Params fields -->
+    <fields name="params">
+        <fieldset name="COM_ZTAUTOLINKS_FIELDSET_PARAMETERS">       
+            <field 
+                type="list"
+                default="0"
+                name="redirect" 
+                id="redirect" 
+                label="COM_ZTAUTOLINKS_FIELDLABEL_REDIRECT"
+                description="COM_ZTAUTOLINKS_FIELDLABEL_REDIRECT">               
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>                                
+            </field>      
+            <field 
+                type="text"
+                default=""
+                name="title" 
+                id="title" 
+                label="COM_ZTAUTOLINKS_FIELDLABEL_TITLE"
+                description="COM_ZTAUTOLINKS_FIELDDESC_TITLE"         
+                size="40"
+            />
+            <field 
+                type="text"
+                default="ztautolinks"
+                name="class" 
+                id="class" 
+                label="COM_ZTAUTOLINKS_FIELDLABEL_CLASS"
+                description="COM_ZTAUTOLINKS_FIELDDESC_CLASS"         
+                size="40"
+            />
+            <field 
+                type="text"
+                default=""
+                name="style" 
+                id="style" 
+                label="COM_ZTAUTOLINKS_FIELDLABEL_STYLE"
+                description="COM_ZTAUTOLINKS_FIELDDESC_STYLE"         
+                size="40"
+            />
+            <field 
+                type="list"
+                default=""
+                name="follow" 
+                id="follow" 
+                label="COM_ZTAUTOLINKS_FIELDLABEL_REL"
+                description="COM_ZTAUTOLINKS_FIELDDESC_REL">  
+                <option value="">COM_ZTAUTOLINKS_VALUE_EMPTY</option>             
+                <option value="alternate">alternate</option>
+                <option value="author">author</option>
+                <option value="bookmark">bookmark</option>
+                <option value="help">help</option>
+                <option value="license">license</option>                
+                <option value="next">next</option>
+                <option value="nofollow">nofollow</option>                
+                <option value="noreferrer">noreferrer</option>                
+                <option value="prefetch">prefetch</option>                
+                <option value="prev">prev</option>                
+                <option value="search">search</option>                
+                <option value="tag">tag</option>                
+            </field> 
+            <field 
+                type="list"
+                default="_self"
+                name="target" 
+                id="target" 
+                label="COM_ZTAUTOLINKS_FIELDLABEL_TARGET"
+                description="COM_ZTAUTOLINKS_FIELDDESC_TARGET">               
+                <option value="_blank">_blank</option>
+                <option value="_self">_self</option>                
+                <option value="_parent">_parent</option>                
+                <option value="_top">_top</option>                
+            </field> 
+        </fieldset>        
+    </fields>
+</form>

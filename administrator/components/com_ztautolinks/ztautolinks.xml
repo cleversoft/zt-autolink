@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="3.2.0" method="upgrade">
+ 
+    <name>COM_ZTAUTOLINKS</name>
+    <!-- The following elements are optional and free of formatting constraints -->
+    <creationDate>Feb 2014</creationDate>
+    <author>APL</author>
+    <authorEmail>support@apl.vn</authorEmail>
+    <authorUrl>http://apl.com.vn</authorUrl>
+    <copyright></copyright>
+    <license></license>
+    <!--  The version string is recorded in the components table -->
+    <version>0.5.5</version>
+    <!-- The description is optional and defaults to the name -->
+    <description></description>
+    <!-- Runs on install/uninstall/update; New in 2.5 -->
+    <scriptfile>script.php</scriptfile>
+    <install> <!-- Runs on install -->
+        <sql>
+            <file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
+        </sql>
+    </install>
+ 
+    <!-- Site Main File Copy Section -->
+    <!-- Note the folder attribute: This attribute describes the folder
+    to copy FROM in the package to install therefore files copied
+    in this section are copied from /site/ in the package -->
+    <files folder="site">
+        <folder>views</folder>
+        <filename>index.html</filename>
+        <filename>ztautolinks.php</filename>
+        <filename>controller.php</filename>        
+    </files>
+ 
+    <administration>
+        <!-- Administration Menu Section -->
+        <menu view="dashboard" >COM_ZTAUTOLINKS</menu>
+        <!-- Administration Main File Copy Section -->
+        <!-- Note the folder attribute: This attribute describes the folder
+        to copy FROM in the package to install therefore files copied
+        in this section are copied from /admin/ in the package -->
+        <files folder="admin">
+            <!-- Admin Main File Copy Section -->
+            <filename>index.html</filename>
+            <filename>ztautolinks.php</filename>
+            <filename>controller.php</filename>           
+            <folder>controllers</folder>			
+            <folder>libraries</folder>
+            <folder>models</folder>
+            <!-- SQL files section -->
+            <folder>sql</folder>
+            <folder>tables</folder>
+            <folder>views</folder>
+        </files>
+        <languages folder="languages/admin">
+            <language tag="en-GB">en-GB.com_ztautolinks.ini</language>
+            <language tag="en-GB">en-GB.com_ztautolinks.sys.ini</language>
+        </languages>
+    </administration>
+ 
+</extension>
