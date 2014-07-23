@@ -88,7 +88,8 @@ if (!class_exists('plgSystemZtAutolinks')) {
          */
         private function _findNodesOfKeyword($keyword) {
             $xpath = new DOMXpath($this->_dom);
-            $textNodes = $xpath->query('//text()[contains(.,"' . $keyword . '")]');
+            /* Only catch from body */
+            $textNodes = $xpath->query('/html/body//text()[contains(.,"' . $keyword . '")]');
             return $textNodes;
         }
 
@@ -120,8 +121,14 @@ if (!class_exists('plgSystemZtAutolinks')) {
          */
         private function _isValidNode($node) {
             /* Make sure this node is not under any <a> tag */
-            $xpath = $node->getNodePath();
-            return (strpos($xpath, '/a') === false && strpos($xpath, 'a/') === false && strpos($xpath, '/a/') === false);
+            /**
+             * @todo We must do improve regex in _findNodesOfKeyword function instead this code
+             */
+            return
+                    $node->nodeName != 'a' &&
+                    $node->parentNode->nodeName != 'a' &&
+                    $node->parentNode->parentNode->nodeName != 'a';
+            //return (strpos($xpath, '/a') === false && strpos($xpath, 'a/') === false && strpos($xpath, '/a/') === false);
         }
 
         /**
