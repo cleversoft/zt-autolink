@@ -130,12 +130,6 @@ class com_ZtAutolinksInstallerScript {
                  * @todo Check column data type
                  */
             }
-
-            /* Enable plugin */
-            $db = JFactory::getDbo();
-            $query = 'UPDATE ' . $db->quoteName('#__extensions') . ' SET ' . $db->quoteName('enabled') . ' = 1 WHERE ' . $db->quoteName('type') . ' = ' . $db->quote('plugin') . ' AND ' . $db->quoteName('element') . ' = ' . $db->quote('ztautolinks');
-            $db->setQuery($query);
-            $db->execute();
         }
     }
 
