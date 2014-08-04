@@ -26,11 +26,14 @@ if (!class_exists('plgSystemZtAutolinks')) {
      */
     class plgSystemZtAutolinks extends JPlugin {
 
+        private $_buffer = null;
+
         /**
          * DOMDocument
          * @var object
          */
         private $_dom = null;
+        private $_list = array();
 
         /**
          * Construction
@@ -39,11 +42,16 @@ if (!class_exists('plgSystemZtAutolinks')) {
          */
         public function __construct(&$subject, $config = array()) {
             parent::__construct($subject, $config);
-            /* Load required classes */
-            if (is_file(JPATH_ADMINISTRATOR . '/components/com_ztautolinks/libraries/item.php')) {
-                require_once JPATH_ADMINISTRATOR . '/components/com_ztautolinks/libraries/item.php';
-                JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_ztautolinks/models');
-            }
+        }
+
+        /**
+         * Check if Zt Autolinks component is installed & enabled
+         * @return boolean
+         */
+        private function _isComponentEnabled() {
+            $db = JFactory::getDbo();
+            $db->setQuery(' SELECT  ' . $db->quoteName('enabled') . ' FROM ' . $db->quoteName('#__extensions') . ' WHERE ' . $db->quoteName('name') . ' = ' . $db->quote('ztautolinks'));
+            return (bool) $db->loadResult();
         }
 
         /**
@@ -54,14 +62,46 @@ if (!class_exists('plgSystemZtAutolinks')) {
              * Only process for frontend
              */
             if (JFactory::getApplication()->isSite()) {
-                /* Get body and load into DOMDocument */
-                $buffer = JResponse::getBody();
-                $this->_dom = new DOMDocument();
-                @$this->_dom->loadHtml($buffer);
-                /* Process */
-                $this->_findAndReplaceKeywords();
-                /* Save back to Joomla! body */
-                JResponse::setBody($this->_dom->saveHTML());
+                if ($this->_isComponentEnabled()) {
+                    /* Load required classes */
+                    if (is_file(JPATH_ADMINISTRATOR . '/components/com_ztautolinks/libraries/item.php')) {
+                        require_once JPATH_ADMINISTRATOR . '/components/com_ztautolinks/libraries/item.php';
+                        JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_ztautolinks/models');
+                        $this->_execute();
+                    }
+                }
+            }
+        }
+
+        /**
+         * Primary function
+         */
+        private function _execute() {
+            /* Get body and load into DOMDocument */
+            $buffer = JResponse::getBody();
+            $this->_dom = new DOMDocument();
+            @$this->_dom->loadHtml($buffer);
+            $list = $this->_getList();
+            foreach ($list as $item) {
+                $this->_findAndReplaceKeyword($item);
+            }
+
+            /* Save back to Joomla! body */
+            JResponse::setBody($this->_dom->saveHTML());
+        }
+
+        /**
+         * Replace each keyword
+         * @param type $item
+         */
+        private function _findAndReplaceKeyword($item) {
+            $nodes = $this->_getNodesList($item);
+            if (( count($nodes) > 0) && $this->_list[trim($item->keyword)] > 0) {
+                foreach ($nodes as $node) {
+                    $this->_nodeReplace($node, $item);
+                }
+
+                $this->_findAndReplaceKeyword($item);
             }
         }
 
@@ -76,9 +116,65 @@ if (!class_exists('plgSystemZtAutolinks')) {
             $list = array();
             /* Put item into ZtautolinksItem object class */
             foreach ($items as $item) {
-                $list[] = new ZtautolinksItem($item);
+                $list[$item->keyword] = new ZtautolinksItem($item);
             }
             return $list;
+        }
+
+        /**
+         * Process to get list nodes by keyword
+         * @param array $list
+         * @return array
+         */
+        private function _getNodesList($item) {
+            /* Init nodes array */
+            $nodes = array();
+            /* Find nodes of keyword */
+            $keyword = trim($item->get('keyword'));
+            $textNodes = $this->_findNodesOfKeyword($keyword);
+            /* Validation */
+            if ($textNodes) {
+                foreach ($textNodes as $node) {
+                    if ($this->_isValidNode($node, $keyword)) {
+                        $nodes[] = $node;
+                    }
+                }
+            }
+            $totalNodes = count($nodes);
+            /* Found nodes */
+            if ($totalNodes) {
+                /* Update nodes limit by occurrence and limit */
+                /* Init limit value of keyword */
+                if (!isset($this->_list[$keyword])) {
+                    $this->_list[$keyword] = $item->get('limits');
+                }
+                /* Is not reached limit */
+                if ($this->_list[$keyword] > 0) {
+                    /* If this keyword founded in nodes */
+                    if (count($nodes) > 0) {
+                        /* Do ordering node array by occurrence */
+                        switch ($item->get('occurrence')) {
+                            case 1 : /* top */
+                                break;
+                            case 2: /* end */
+                                $nodes = array_reverse($nodes);
+                                break;
+                            case 3: /* random */
+                                shuffle($nodes);
+                                break;
+                        }
+                        /* Cut node array by count limit */
+                        if ($this->_list[$keyword] == 0) {
+                            
+                        } else {
+                            if (count($nodes) > $this->_list[$keyword]) {
+                                $nodes = array_slice($nodes, 0, $this->_list[$keyword]);
+                            }
+                        }
+                    }
+                }
+            }
+            return $nodes;
         }
 
         /**
@@ -88,30 +184,13 @@ if (!class_exists('plgSystemZtAutolinks')) {
          */
         private function _findNodesOfKeyword($keyword) {
             $xpath = new DOMXpath($this->_dom);
-            /* Only catch from body */
-            $textNodes = $xpath->query('/html/body//text()[contains(.,"' . $keyword . '")]');
+            /**
+             * Only catch from body
+             * @uses This process only filter text() with keyword. We'll need do more check later to get exactly needed keyword
+             */
+            $query = '/html/body//text()[contains(.,"' . $keyword . '")]';
+            $textNodes = $xpath->query($query);
             return $textNodes;
-        }
-
-        /**
-         * Process to get list nodes by keywords
-         * @param array $list
-         * @return array
-         */
-        private function _getNodesList($list) {
-            $nodes = array();
-            foreach ($list as $item) {
-                $keyword = $item->get('keyword');
-                $textNodes = $this->_findNodesOfKeyword($keyword);
-                $index = 0;
-                foreach ($textNodes as $node) {
-                    if ($this->_isValidNode($node)) {
-                        $nodes[$keyword][] = $node;
-                    }
-                    $index++;
-                }
-            }
-            return $nodes;
         }
 
         /**
@@ -119,16 +198,25 @@ if (!class_exists('plgSystemZtAutolinks')) {
          * @param object $node
          * @return boolean
          */
-        private function _isValidNode($node) {
-            /* Make sure this node is not under any <a> tag */
-            /**
-             * @todo We must do improve regex in _findNodesOfKeyword function instead this code
-             */
-            return
-                    $node->nodeName != 'a' &&
-                    $node->parentNode->nodeName != 'a' &&
-                    $node->parentNode->parentNode->nodeName != 'a';
-            //return (strpos($xpath, '/a') === false && strpos($xpath, 'a/') === false && strpos($xpath, '/a/') === false);
+        private function _isValidNode($node, $keyword) {
+            $value = $node->nodeValue;
+            /* Do find exactly "keyword" in this text */
+            $pattern = '/([!|(|){|}|;|\'|,|.|?|:|"|[|\]|\s|])(' . $keyword . ')([!|(|){|}|;|\'|,|.|?|:|"|[|\]|\s])/';
+            $return = preg_match_all($pattern, $value, $matches);
+            if ($return !== false) {
+                if ($return > 0) {
+                    /* Make sure it's not under a tag */
+                    if ($node->nodeName != 'a') {
+                        $parentNode = $node->parentNode;
+                        if ($parentNode) {
+                            return $parentNode->nodeName != 'a';
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         /**
@@ -138,8 +226,13 @@ if (!class_exists('plgSystemZtAutolinks')) {
          * @return \plgSystemZtAutolinks
          */
         private function _nodeReplace($node, $item) {
-            $keyword = $item->get('keyword');
-            $text = $node->nodeValue;
+            $keyword = trim($item->get('keyword'));
+
+            $pattern = '~\b' . $keyword . '\b~';
+
+            /* Make wrapper for this keyword */
+            $keyword = '<ztautolinks>' . $keyword . '</ztautolinks>';
+            $text = preg_replace($pattern, $keyword, $node->nodeValue);
 
             /* Find keyword in this text */
             while (($pos = strpos($text, $keyword)) !== false) {
@@ -148,11 +241,14 @@ if (!class_exists('plgSystemZtAutolinks')) {
                 $fragment = $this->_dom->createDocumentFragment();
                 $fragment->appendChild(new DOMText(substr($text, 0, $pos)));
 
+                /* Create new DOM Node with real keyword */
                 $word = substr($text, $pos, strlen($keyword));
+                $rWord = str_replace('<ztautolinks>', '', $word);
+                $rWord = str_replace('</ztautolinks>', '', $rWord);
 
                 /* Make wrapper */
                 $highlight = $this->_dom->createElement($item->params->get('tag', 'a'));
-                $highlight->appendChild(new DOMText($word));
+                $highlight->appendChild(new DOMText($rWord));
 
                 /* Only for <a> tag */
                 if ($item->params->get('tag', 'a') == 'a') {
@@ -172,7 +268,10 @@ if (!class_exists('plgSystemZtAutolinks')) {
 
                 $fragment->appendChild($highlight);
 
+                /* Replace wrapper */
                 $text = substr($text, $pos + strlen($keyword));
+                $text = str_replace('<ztautolinks>', '', $text);
+                $text = str_replace('</ztautolinks>', '', $text);
 
                 if (!empty($text)) {
                     $fragment->appendChild(new DOMText($text));
@@ -187,46 +286,6 @@ if (!class_exists('plgSystemZtAutolinks')) {
                 }
             }
             return $this;
-        }
-
-        /**
-         * Primary process
-         */
-        private function _findAndReplaceKeywords() {
-            /* Get keywords list */
-            $list = $this->_getList();
-            /* Get nodes list */
-            $nodes = $this->_getNodesList($list);
-
-            /**
-             * Do process
-             */
-            foreach ($list as $item) {
-                $keyword = $item->get('keyword');
-                /* If this keyword founded in nodes */
-                if (isset($nodes[$keyword])) {
-                    /* Do ordering node array by occurrence */
-                    $node = $nodes[$keyword];
-                    switch ($item->get('occurrence')) {
-                        case 1 : /* top */
-                            break;
-                        case 2: /* end */
-                            $node = array_reverse($node);
-                            break;
-                        case 3: /* random */
-                            shuffle($node);
-                            break;
-                    }
-                    /* Cut node array by count limit */
-                    if (count($node) > $item->get('limits')) {
-                        $node = array_slice($node, 0, $item->get('limits'));
-                    }
-                    /* Do replace */
-                    foreach ($node as $wNode) {
-                        $this->_nodeReplace($wNode, $item);
-                    }
-                }
-            }
         }
 
     }
