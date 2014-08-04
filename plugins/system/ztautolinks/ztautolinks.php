@@ -95,7 +95,7 @@ if (!class_exists('plgSystemZtAutolinks')) {
          * @param type $item
          */
         private function _findAndReplaceKeyword($item) {
-            $nodes = $this->_getNodesList($item);
+            $nodes = $this->_getNodesList($item);			
             if (( count($nodes) > 0) && $this->_list[trim($item->keyword)] > 0) {
                 foreach ($nodes as $node) {
                     $this->_nodeReplace($node, $item);
@@ -281,6 +281,7 @@ if (!class_exists('plgSystemZtAutolinks')) {
 
                 if (is_object($node->parentNode)) {
                     $node->parentNode->replaceChild($fragment, $node);
+					$this->_list[trim($item->get('keyword'))]--;
                 } else {
                     
                 }
