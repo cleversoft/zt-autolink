@@ -3,7 +3,7 @@
  * ZAuto Links
  * @package Joomla.Component
  * @subpackage com_zautolinks
- * @version 0.5.5
+ * @version 0.5.7
  *
  * @copyright (C) 2011 - 2013 by JOOservices Ltd - All rights reserved!
  * @license GNU/GPL, see LICENSE.php

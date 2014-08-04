@@ -4,7 +4,7 @@
  * Zt Autolinks
  * @package Joomla.Component
  * @subpackage com_ztautolinks
- * @version 0.5.5
+ * @version 0.5.7
  *
  * @copyright   Copyright (c) 2013 APL Solutions (http://apl.vn)
  *
